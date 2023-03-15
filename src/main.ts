@@ -1,5 +1,10 @@
 import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
-
-createApp(App).use(router).mount("#app");
+import registerGlobal from "@/global";
+import "./css/style.scss";
+import { h5Request } from "@/service";
+const app = createApp(App);
+const global = app.config.globalProperties;
+global.$http = h5Request;
+app.use(router).use(registerGlobal).mount("#app");
