@@ -3,8 +3,5 @@ import App from "./App.vue";
 import router from "./router";
 import registerGlobal from "@/global";
 import "./css/style.scss";
-import { h5Request } from "@/service";
 const app = createApp(App);
-const global = app.config.globalProperties;
-global.$http = h5Request;
 app.use(router).use(registerGlobal).mount("#app");

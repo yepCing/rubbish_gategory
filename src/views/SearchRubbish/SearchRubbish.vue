@@ -9,13 +9,14 @@
       background="transparent"
       placeholder="请输入搜索关键词"
     />
-    <div class="hot-search mt-4">
+    <div class="hot-search mt-6">
       <h3 class="mb-2">热门搜索</h3>
       <div>
         <template v-for="it in hotSearchList" :key="it">
           <van-tag
+            plain
             @click="onSearch(it)"
-            class="ml-2 mt-3"
+            class="ml-3 mt-4"
             round
             type="primary"
             >{{ it }}</van-tag
@@ -23,9 +24,16 @@
         </template>
       </div>
     </div>
-    <div class="history-search mt-4" v-if="historyList.list.length">
+    <div class="history-search mt-6">
       <h3 class="mb-2">搜索历史</h3>
-      <div>
+      <div
+        class="ta-r fz-12"
+        v-show="historyList.list.length"
+        @click="onClearHistory"
+      >
+        清空历史
+      </div>
+      <div v-if="historyList.list.length">
         <div
           class="al-c history-item"
           v-for="it in historyList.list"
@@ -36,6 +44,7 @@
           <p class="py-2 fz-12 ml-2">{{ it }}</p>
         </div>
       </div>
+      <van-empty v-else image-size="100" description="暂无数据" />
     </div>
   </div>
 </template>
@@ -64,17 +73,24 @@ const onSearch = (key: string) => {
 };
 
 const putHistory = (key: string) => {
+  const index = historyList.list.findIndex((it) => it == key);
+  if (index != -1) historyList.list.splice(index, 1);
   historyList.list.unshift(key);
   localCache.setCache("history-search", historyList.list);
 };
-// 历史记录
+// Get history from localstorage
 const getHistoryList = () => {
   const history = localCache.getCache<[]>("history-search");
-  console.log(typeof history);
   if (!history) localCache.setCache("history-search", []);
   historyList.list = history ?? [];
 };
 getHistoryList();
+
+// Clear history
+const onClearHistory = () => {
+  historyList.list = [];
+  localCache.deleteCache("history-search");
+};
 </script>
 
 <style scoped lang="scss">

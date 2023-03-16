@@ -61,9 +61,9 @@ const fetchRecommendList = async () => {
     console.log(err);
   }
 };
-
 await onDetail();
 await fetchRecommendList();
+
 const type = computed(() => {
   if (result.value?.row?.type == 1) return "可回收垃圾";
   if (result.value?.row?.type == 2) return "有害垃圾";
