@@ -16,7 +16,7 @@
           <van-tag
             plain
             @click="onSearch(it)"
-            class="ml-3 mt-4"
+            class="ml-3 mt-4 pa-1 pl-2 pr-2"
             round
             type="primary"
             >{{ it }}</van-tag
@@ -50,10 +50,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue";
-import { useRouter } from "vue-router";
+import { ref, reactive, inject } from "vue";
 import localCache from "@/utils/cache";
-const router = useRouter();
+const openLink = inject("$openLink");
+
 const searchKey = ref("");
 const hotSearchList = reactive([
   "苹果",
@@ -68,7 +68,7 @@ const historyList = reactive<{ list: string[] }>({
   list: [],
 });
 const onSearch = (key: string) => {
-  router.push("/detail/" + key);
+  openLink("/detail/" + encodeURI(key));
   putHistory(key);
 };
 

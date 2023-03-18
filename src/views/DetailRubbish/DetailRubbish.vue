@@ -24,8 +24,8 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute, useRouter } from "vue-router";
-import { computed, onErrorCaptured, reactive, ref, watch } from "vue";
+import { useRoute } from "vue-router";
+import { computed, onErrorCaptured, reactive, ref, watch, inject } from "vue";
 import { getDetail, getRecommendList } from "@/service/detailRubbish";
 import { IData, IRubbishObj } from "@/service/detailRubbish/types";
 
@@ -33,7 +33,8 @@ onErrorCaptured((error) => {
   console.log(error);
 });
 const route = useRoute();
-const router = useRouter();
+const openLink = inject("$openLink");
+
 let name = ref<string>("");
 name.value = route.params.name as string;
 
@@ -79,7 +80,7 @@ const getType = (type: string | number) => {
   return "未知垃圾";
 };
 const onRecommend = (key: string) => {
-  router.push("/detail/" + key);
+  openLink("/detail/" + encodeURI(key));
 };
 watch(
   () => route.params.name,

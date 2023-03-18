@@ -1,34 +1,42 @@
 <template>
-  <div class="bg-white vh100">
-    <div class="pa-5">
-      <h3>{{ type }}</h3>
-      <div class="mt-3 discription fz-14 gray">
-        {{ categoryRubbishDetail.data.explain }}
+  <div class="bg-white vh100 ov-h">
+    <div v-if="initLoading" style="margin-top: 200px">
+      <van-skeleton title :row="3" />
+    </div>
+    <div v-else>
+      <div class="pa-5">
+        <h3>{{ type }}</h3>
+        <div class="mt-3 discription fz-14 gray">
+          {{ categoryRubbishDetail.data.explain }}
+        </div>
       </div>
-    </div>
 
-    <div v-if="list.length">
-      <van-list
-        v-model:loading="loading"
-        :finished="finished"
-        finished-text="没有更多了"
-        @load="onLoad"
-      >
-        <van-cell
-          v-for="item in list"
-          :key="item.id"
-          :title="item.name"
-          @click="router.push('/detail/' + item.name)"
-        />
-      </van-list>
+      <div v-if="list.length">
+        <van-list
+          v-model:loading="loading"
+          :finished="finished"
+          finished-text="没有更多了"
+          @load="onLoad"
+        >
+          <van-cell
+            v-for="item in list"
+            :key="item.id"
+            @click="openLink('/detail/' + encodeURI(item.name))"
+          >
+            <template #title>
+              <span class="fz-16">{{ item.name }}</span>
+            </template>
+          </van-cell>
+        </van-list>
+      </div>
+      <van-empty v-else image-size="100" description="暂无数据" />
     </div>
-    <van-empty v-else image-size="100" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { ref, reactive, computed, watch, inject } from "vue";
+import { useRoute } from "vue-router";
 import {
   getCategoryRubbish,
   getCategoryItem,
@@ -38,9 +46,8 @@ import {
   ICategoryParmas,
   ICategoryObj,
 } from "@/service/detailRubbish/types";
-
+const openLink = inject("$openLink");
 const route = useRoute();
-const router = useRouter();
 const queryType = reactive({
   type: "",
 });
@@ -61,6 +68,8 @@ const categoryRubbishDetail = reactive<{ data: ICategoryObj }>({
 });
 const loading = ref(false);
 const finished = ref(false);
+const initLoading = ref(true);
+// 获取分类垃圾列表
 const fetchGategoryRubbish = async (params: ICategoryParmas) => {
   try {
     loading.value = true;
@@ -68,7 +77,7 @@ const fetchGategoryRubbish = async (params: ICategoryParmas) => {
     if (!result.rows?.length) {
       finished.value = true;
     } else {
-      list.value = list.value.concat(result.rows);
+      list.value = list.value?.concat(result.rows);
       page.value++;
     }
     loading.value = false;
@@ -77,6 +86,7 @@ const fetchGategoryRubbish = async (params: ICategoryParmas) => {
   }
 };
 
+// 获取分类名称
 const fetchGetCategoryItem = async (id: string) => {
   try {
     const result = await getCategoryItem({
@@ -99,12 +109,14 @@ const type = computed(() => {
   if (queryType.type == "4") return "干垃圾";
   return "未知垃圾";
 });
-fetchGategoryRubbish({
+
+await fetchGategoryRubbish({
   _page: page.value,
   _limit: limit.value,
   type: queryType.type,
 });
-fetchGetCategoryItem(queryType.type);
+await fetchGetCategoryItem(queryType.type);
+initLoading.value = false;
 const onLoad = () => {
   fetchGategoryRubbish({
     _page: page.value,
@@ -114,16 +126,18 @@ const onLoad = () => {
 };
 watch(
   () => route.query.type,
-  (val) => {
+  async (val) => {
     queryType.type = val as string;
     page.value = 1;
     list.value = [];
-    fetchGategoryRubbish({
+    initLoading.value = true;
+    await fetchGategoryRubbish({
       _page: page.value,
       _limit: limit.value,
       type: queryType.type,
     });
-    fetchGetCategoryItem(queryType.type);
+    await fetchGetCategoryItem(queryType.type);
+    initLoading.value = false;
   }
 );
 </script>
